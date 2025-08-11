@@ -1,6 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
+
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Workout Logger — Moon Edition</title>
@@ -40,7 +38,7 @@ input[type=text],input[type=number],input[type=date],select{width:100%;padding:1
 .switch:checked{background:#ffb1df}
 .switch::after{content:"";position:absolute;inset:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:translateX(0);transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .switch:checked::after{transform:translateX(20px)}
-.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#fff0f6;border:1px solid #ffd6ec;padding:0 6px;border-radius:6px}
+.kbd{font-family:ui-monosose,Menlo,Consolas,monospace;background:#fff0f6;border:1px solid #ffd6ec;padding:0 6px;border-radius:6px}
 .hint{font-size:11px;color:var(--muted);margin-top:4px}
 .right{display:flex;justify-content:flex-end}
 </style>
@@ -77,9 +75,22 @@ input[type=text],input[type=number],input[type=date],select{width:100%;padding:1
   <section class="card" style="margin-top:12px">
     <div class="hd">Progress</div>
     <div class="bd">
-      <div class="row cols-3" style="align-items:end">
-        <div style="grid-column:span 2"><canvas id="chart" height="220"></canvas></div>
-        <div><label>Exercise</label><select id="graphSelect"></select></div>
+      <!-- CHANGED: cols-4 to fit two dropdowns -->
+      <div class="row cols-4" style="align-items:end">
+        <!-- Chart spans 3 columns on desktop -->
+        <div style="grid-column: span 3"><canvas id="chart" height="220"></canvas></div>
+        <div>
+          <label>Exercise</label>
+          <select id="graphSelect"></select>
+        </div>
+        <div>
+          <label>Time scale</label>
+          <select id="timeScale">
+            <option value="session">Session</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </div>
       </div>
     </div>
   </section>
@@ -150,7 +161,8 @@ const DEFAULT_DAY_MAP={1:null,2:2,3:3,4:null,5:1,6:4}; // Mon..Sat; Sunday handl
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const elDate=$("#dateInput"), elDay=$("#daySelect"), elUnit=$("#unitSelect"), elPill=$("#weekdayPill");
 const elExList=$("#exList"), elNotes=$("#notesInput"), elSave=$("#saveBtn"), elAddEx=$("#addEx");
-const elGraph=$("#graphSelect"), elChartCanvas=$("#chart"), elHistT=$("#historyToggle"), elHistW=$("#historyWrap"), elHistL=$("#historyList");
+const elGraph=$("#graphSelect"), elTime=$("#timeScale"), elChartCanvas=$("#chart");
+const elHistT=$("#historyToggle"), elHistW=$("#historyWrap"), elHistL=$("#historyList");
 const elSearch=$("#searchInput"), elExport=$("#exportBtn"), elImport=$("#importInput"), elOpenSettings=$("#openSettings");
 const settingsDlg=$("#settingsDlg"), sundaySelect=$("#sundaySelect"), workDatesBox=$("#workDatesBox"), applyDates=$("#applyDates"), clearDates=$("#clearDates"), defaultHistory=$("#defaultHistory");
 const cardioDlg=$("#cardioInfo"), cardioInfoBody=$("#cardioInfoBody"), closeCardio=$("#closeCardioInfo");
@@ -217,14 +229,53 @@ function rebuildGraphExerciseList(){
   const list=[...set].filter(Boolean).sort(), cur=elGraph.value; elGraph.innerHTML=""; list.forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n; elGraph.appendChild(o);});
   if(list.length) elGraph.value=list.includes(cur)?cur:list[0];
 }
+
+/* ==== NEW: time-scale helpers ==== */
+function periodKey(iso, period){
+  if(period==="year") return iso.slice(0,4);           // YYYY
+  if(period==="month") return iso.slice(0,7);          // YYYY-MM
+  return iso;                                          // session (date)
+}
+function sortKeys(keys, period){
+  if(period==="year") return keys.sort((a,b)=>a.localeCompare(b));
+  if(period==="month") return keys.sort((a,b)=>a.localeCompare(b));
+  return keys.sort((a,b)=>a.localeCompare(b)); // YYYY-MM-DD
+}
+
 let chart;
 function buildGraph(){
   const ex=elGraph.value;
-  const pts=state.sessions.flatMap(s=>s.exercises.filter(e=>e.name===ex).map(e=>({date:s.date,weight:Number(String(e.weight).replace(/[^0-9.]/g,""))||0}))).filter(p=>p.weight>0).slice().reverse();
-  const labels=pts.map(p=>p.date), data=pts.map(p=>p.weight);
+  const period=elTime?.value||"session";
+
+  // Collect numeric weights per date
+  const raw = state.sessions.flatMap(s =>
+    s.exercises
+      .filter(e => e.name === ex)
+      .map(e => ({
+        date: s.date,
+        val: Number(String(e.weight).replace(/[^0-9.]/g,"")) || 0
+      }))
+  ).filter(p => p.val > 0);
+
+  // Group by period; take MAX per period
+  const groups = {};
+  raw.forEach(p => {
+    const k = periodKey(p.date, period);
+    groups[k] = Math.max(groups[k] ?? 0, p.val);
+  });
+
+  const keys = sortKeys(Object.keys(groups), period);
+  const labels = keys;
+  const data = keys.map(k => groups[k]);
+
   if(chart) chart.destroy();
-  chart=new Chart(elChartCanvas,{type:"line",data:{labels,datasets:[{label:ex||"Exercise",data,borderWidth:2,pointRadius:3,tension:.25}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  chart = new Chart(elChartCanvas, {
+    type: "line",
+    data: { labels, datasets: [{ label: `${ex} (by ${period})`, data, borderWidth: 2, pointRadius: 3, tension: .25 }]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }}}
+  });
 }
+
 function renderHistory(){
   const show=elHistT.checked; elHistW.style.display=show?"block":"none"; if(!show) return;
   const q=(elSearch?.value||"").trim().toLowerCase();
@@ -237,6 +288,7 @@ function renderHistory(){
     elHistL.appendChild(div);
   });
 }
+
 function init(){
   setDayAuto(); buildExerciseRows(); rebuildGraphExerciseList(); buildGraph(); renderHistory();
   document.addEventListener("keydown",(e)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault(); elExport.click();}});
@@ -250,6 +302,7 @@ function init(){
   elHistT.addEventListener("change",()=>{state.settings.showHistory=elHistT.checked; saveAll();});
   elSearch?.addEventListener("input",renderHistory);
   elGraph.addEventListener("change",buildGraph);
+  elTime.addEventListener("change",buildGraph); /* NEW */
   elExport.addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="workout_logger_backup.json";a.click();URL.revokeObjectURL(url);});
   elImport.addEventListener("change",(e)=>{const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{try{const data=JSON.parse(r.result); if(data.sessions) state.sessions=data.sessions; if(data.settings) Object.assign(state.settings,data.settings); elUnit.value=state.settings.unit||"lb"; elHistT.checked=!!state.settings.showHistory; elHistW.style.display=elHistT.checked?"block":"none"; sundaySelect.value=String(state.settings.sundayIs||5); defaultHistory.checked=!!state.settings.showHistory; saveAll();}catch{alert("Invalid JSON");}}; r.readAsText(f);});
   elOpenSettings.addEventListener("click",()=>{workDatesBox.value=(state.settings.workDates||[]).join("\n"); sundaySelect.value=String(state.settings.sundayIs||5); defaultHistory.checked=!!state.settings.showHistory; settingsDlg.showModal();});
@@ -260,5 +313,3 @@ function init(){
 }
 init();
 </script>
-</body>
-</html>
