@@ -1,693 +1,264 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Workout Logger — 5-Day Split (Moon Edition)</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#fff7fb;          /* blush */
-      --bg2:#fff0f6;         /* lighter blush */
-      --card:#ffffff;
-      --ink:#3b0a45;         /* plum ink */
-      --muted:#8b5a8c;
-      --ring:#ffd6ec;        /* pink border */
-      --brand:#ff77c8;       /* pink */
-      --brand-ink:#4a044e;   /* deep plum for contrast */
-      --accent:#ffd166;      /* moon gold */
-      --shadow: 0 12px 22px rgba(255,119,200,0.18);
-      --radius: 16px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
-      color:var(--ink); background: radial-gradient(1200px 800px at 20% -10%, #ffe6f4 20%, transparent 60%), radial-gradient(1400px 900px at 110% 10%, #ffe2fb 10%, transparent 60%), var(--bg);
-    }
-    .wrap{max-width:1000px; margin:0 auto; padding:16px 10px 80px}
-    h1{font-size:24px; margin:0 0 8px; font-family:Quicksand, Inter, system-ui, sans-serif; letter-spacing:.3px}
-    @media (min-width:768px){ h1{font-size:28px} }
-    .halo{
-      background: linear-gradient(135deg, #ffe6f7, #fff);
-      border:1px solid var(--ring);
-      border-radius: 18px;
-      padding:10px 14px;
-      box-shadow: var(--shadow);
-      display:inline-flex;
-      gap:8px; align-items:center;
-    }
-    .moon{width:18px; height:18px; background:conic-gradient(from 0deg, var(--accent) 0 75%, transparent 75% 100%); border-radius:50%; box-shadow:inset -3px -3px 0 rgba(0,0,0,.06)}
-    .row{display:grid; gap:10px}
-    @media (min-width: 768px){
-      .row.cols-2{grid-template-columns:1fr 1fr}
-      .row.cols-3{grid-template-columns:repeat(3,1fr)}
-      .row.cols-4{grid-template-columns:repeat(4,1fr)}
-    }
-    .card{background:var(--card); border:1px solid var(--ring); border-radius:var(--radius); box-shadow:var(--shadow)}
-    .card .hd{padding:12px 14px; border-bottom:1px solid var(--ring); font-weight:700; font-family:Quicksand, Inter}
-    .card .bd{padding:12px}
-    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
-    input[type="text"], input[type="number"], input[type="date"], select, textarea{
-      width:100%; padding:10px 12px; border:1px solid var(--ring); border-radius:12px; font:inherit; background:#fff;
-    }
-    textarea{min-height:90px; resize:vertical}
-    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid var(--ring); background:linear-gradient(180deg, #fff, #ffeafb); cursor:pointer; font-weight:700; font-family:Quicksand}
-    .btn.primary{background:linear-gradient(180deg, #ffb1df, #ff77c8); color:#fff; border-color:#ff92d2}
-    .btn.ghost{background:transparent}
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-    .stack{display:flex; gap:8px; flex-wrap:wrap}
-    /* Mobile-first layout for exercise row */
-    .ex-row{display:grid; grid-template-columns: 1fr; gap:8px; align-items:end; padding:8px; border:1px dashed var(--ring); border-radius:14px; background:#fff7fb}
-    @media (min-width:520px){
-      .ex-row{grid-template-columns: minmax(150px,1fr) 1fr 1fr 1fr 40px}
-    }
-    @media (min-width:900px){
-      .ex-row{grid-template-columns: minmax(180px,1fr) 90px 90px 140px 40px}
-    }
-    .ex-row .del{border-radius:10px; height:42px}
-    .muted{color:var(--muted)}
-    .pill{display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; background:#ffe6f7; color:#7a294f; font-weight:700; font-size:12px; gap:6px}
-    .star{width:12px; height:12px; background: radial-gradient(circle at 40% 40%, #fff 0 20%, #ffd6ec 21% 60%, transparent 61%); transform: rotate(45deg); display:inline-block; border-radius:3px}
-    .list{display:grid; gap:10px}
-    .list .item{border:1px solid var(--ring); border-radius:12px; padding:10px 12px; background:#fff}
-    .right{display:flex; justify-content:flex-end}
-    .switch{appearance:none; width:46px; height:26px; border-radius:999px; background:#ffd6ec; position:relative; outline:none; cursor:pointer; transition:all .2s}
-    .switch:checked{background:#ffb1df}
-    .switch::after{content:""; position:absolute; inset:3px; width:20px; height:20px; border-radius:50%; background:#fff; transform:translateX(0); transition:transform .2s; box-shadow:0 1px 2px rgba(0,0,0,.08)}
-    .switch:checked::after{transform:translateX(20px)}
-    .footer-note{font-size:12px; color:var(--muted); margin-top:8px}
-    .hr{height:1px; background:var(--ring); margin:12px 0}
-    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#fff0f6; border:1px solid #ffd6ec; padding:0 6px; border-radius:6px}
-    .hint{font-size:11px; color:var(--muted); margin-top:4px}
-    .inline{display:flex; align-items:center; gap:8px}
-    dialog::backdrop{background:rgba(255,119,200,.15)}
-  </style>
-
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#ff77c8">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Workout Logger — Moon Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff7fb; --card:#fff; --ink:#3b0a45; --muted:#8b5a8c; --ring:#ffd6ec;
+  --brand:#ff77c8; --shadow:0 12px 22px rgba(255,119,200,.18); --radius:16px; --gold:#ffd166;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink);
+  background:radial-gradient(1200px 800px at 20% -10%,#ffe6f4 20%,transparent 60%),
+             radial-gradient(1400px 900px at 110% 10%,#ffe2fb 10%,transparent 60%),#fff7fb}
+.wrap{max-width:1000px;margin:0 auto;padding:16px 10px 80px}
+.halo{background:linear-gradient(135deg,#ffe6f7,#fff);border:1px solid var(--ring);border-radius:18px;padding:10px 14px;box-shadow:var(--shadow);display:inline-flex;gap:8px;align-items:center}
+.moon{width:18px;height:18px;background:conic-gradient(from 0deg,var(--gold) 0 75%,transparent 75% 100%);border-radius:50%;box-shadow:inset -3px -3px 0 rgba(0,0,0,.06)}
+h1{font:700 24px/1 Quicksand,Inter,sans-serif;letter-spacing:.3px;margin:0}
+@media(min-width:768px){h1{font-size:28px}}
+.card{background:var(--card);border:1px solid var(--ring);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card .hd{padding:12px 14px;border-bottom:1px solid var(--ring);font:700 16px/1 Quicksand,Inter}
+.card .bd{padding:12px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+input[type=text],input[type=number],input[type=date],select{width:100%;padding:10px 12px;border:1px solid var(--ring);border-radius:12px;font:inherit;background:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--ring);background:linear-gradient(180deg,#fff,#ffeafb);cursor:pointer;font:700 14px/1 Quicksand}
+.btn.primary{background:linear-gradient(180deg,#ffb1df,#ff77c8);color:#fff;border-color:#ff92d2}
+.stack{display:flex;gap:8px;flex-wrap:wrap}
+.row{display:grid;gap:10px}
+@media(min-width:768px){.row.cols-3{grid-template-columns:repeat(3,1fr)}.row.cols-4{grid-template-columns:repeat(4,1fr)}}
+.pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#ffe6f7;color:#7a294f;font-weight:700;font-size:12px;gap:6px}
+.star{width:12px;height:12px;background:radial-gradient(circle at 40% 40%,#fff 0 20%,#ffd6ec 21% 60%,transparent 61%);transform:rotate(45deg);display:inline-block;border-radius:3px}
+.list{display:grid;gap:10px}
+.ex-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end;padding:8px;border:1px dashed var(--ring);border-radius:14px;background:#fff7fb}
+@media(min-width:520px){.ex-row{grid-template-columns:minmax(150px,1fr) 1fr 1fr 1fr 40px}}
+@media(min-width:900px){.ex-row{grid-template-columns:minmax(180px,1fr) 90px 90px 140px 40px}}
+.switch{appearance:none;width:46px;height:26px;border-radius:999px;background:#ffd6ec;position:relative;cursor:pointer}
+.switch:checked{background:#ffb1df}
+.switch::after{content:"";position:absolute;inset:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:translateX(0);transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.switch:checked::after{transform:translateX(20px)}
+.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#fff0f6;border:1px solid #ffd6ec;padding:0 6px;border-radius:6px}
+.hint{font-size:11px;color:var(--muted);margin-top:4px}
+.right{display:flex;justify-content:flex-end}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap">
-      <div class="halo"><span class="moon"></span><strong>Workout Logger</strong><span class="star"></span></div>
-      <div class="stack">
-        <button id="exportBtn" class="btn">Export JSON</button>
-        <label class="btn">
-          Import JSON <input id="importInput" type="file" accept="application/json" hidden>
-        </label>
-        <button id="openSettings" class="btn">Settings</button>
+<div class="wrap">
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <div class="halo"><span class="moon"></span><h1>Workout Logger</h1><span class="star"></span></div>
+    <div class="stack">
+      <button id="exportBtn" class="btn">Export JSON</button>
+      <label class="btn">Import JSON <input id="importInput" type="file" accept="application/json" hidden></label>
+      <button id="openSettings" class="btn">Settings</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="hd">Quick Log</div>
+    <div class="bd">
+      <div class="row cols-4">
+        <div><label>Date</label><input type="date" id="dateInput"/></div>
+        <div><label>Day</label><select id="daySelect"></select></div>
+        <div><label>Unit</label><select id="unitSelect"><option value="lb">lb</option><option value="kg">kg</option><option value="g">g</option></select></div>
+        <div><label>&nbsp;</label><span class="pill" id="weekdayPill"><span class="star"></span> —</span></div>
       </div>
-    </header>
 
-    <section class="card">
-      <div class="hd">Quick Log</div>
-      <div class="bd">
-        <div class="row cols-4">
-          <div>
-            <label>Date</label>
-            <input type="date" id="dateInput"/>
-          </div>
-          <div>
-            <label>Day</label>
-            <select id="daySelect"></select>
-          </div>
-          <div>
-            <label>Unit</label>
-            <select id="unitSelect">
-              <option value="lb">lb</option>
-              <option value="kg">kg</option>
-              <option value="g">g</option>
-            </select>
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <span class="pill" id="weekdayPill"><span class="star"></span> —</span>
-          </div>
-        </div>
+      <div id="exList" class="list" style="margin-top:12px"></div>
+      <div class="stack" style="margin-top:8px"><button id="addEx" class="btn">Add exercise</button></div>
 
-        <div id="exList" class="list" style="margin-top:12px"></div>
-        <div class="stack" style="margin-top:8px">
-          <button id="addEx" class="btn">Add exercise</button>
-        </div>
+      <div style="margin-top:8px"><label>Notes</label><input type="text" id="notesInput" placeholder="Optional note (how it felt, RPE, etc.)"/></div>
+      <div class="right" style="margin-top:12px"><button id="saveBtn" class="btn primary">Save session ✨</button></div>
+    </div>
+  </section>
 
-        <div style="margin-top:8px">
-          <label>Notes</label>
-          <input type="text" id="notesInput" placeholder="Optional note (how it felt, RPE, etc.)"/>
-        </div>
-
-        <div class="right" style="margin-top:12px">
-          <button id="saveBtn" class="btn primary">Save session ✨</button>
-        </div>
+  <section class="card" style="margin-top:12px">
+    <div class="hd">Progress</div>
+    <div class="bd">
+      <div class="row cols-3" style="align-items:end">
+        <div style="grid-column:span 2"><canvas id="chart" height="220"></canvas></div>
+        <div><label>Exercise</label><select id="graphSelect"></select></div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="card" style="margin-top:12px">
-      <div class="hd">Progress</div>
-      <div class="bd">
-        <div class="row cols-3" style="align-items:end">
-          <div style="grid-column: span 2">
-            <canvas id="chart" height="220"></canvas>
-          </div>
-          <div>
-            <label>Exercise</label>
-            <select id="graphSelect"></select>
-          </div>
-        </div>
-      </div>
-    </section>
+  <section class="card" style="margin-top:12px">
+    <div class="hd" style="display:flex;align-items:center;justify-content:space-between">
+      <span>History</span>
+      <label style="display:flex;align-items:center;gap:8px"><span class="muted" style="font-size:14px">Show</span><input id="historyToggle" type="checkbox" class="switch"/></label>
+    </div>
+    <div class="bd" id="historyWrap" style="display:none">
+      <input id="searchInput" type="text" placeholder="Search date/day/exercise"/>
+      <div id="historyList" class="list" style="margin-top:10px"></div>
+    </div>
+  </section>
 
-    <section class="card" style="margin-top:12px">
-      <div class="hd" style="display:flex; align-items:center; justify-content:space-between">
-        <span>History</span>
-        <label class="inline">
-          <span class="muted" style="font-size:14px">Show</span>
-          <input id="historyToggle" type="checkbox" class="switch"/>
-        </label>
-      </div>
-      <div class="bd" id="historyWrap" style="display:none">
-        <input id="searchInput" type="text" placeholder="Search date/day/exercise" />
-        <div id="historyList" class="list" style="margin-top:10px"></div>
-      </div>
-    </section>
+  <div class="hint" style="margin-top:8px">Tip: press <span class="kbd">Ctrl</span>/<span class="kbd">Cmd</span> + <span class="kbd">S</span> to export a backup occasionally.</div>
+</div>
 
-    <div class="footer-note">Tip: press <span class="kbd">Ctrl</span>/<span class="kbd">Cmd</span> + <span class="kbd">S</span> to export a backup occasionally.</div>
+<!-- Cardio info dialog -->
+<dialog id="cardioInfo" style="border:none;border-radius:16px;width:min(560px,96%);padding:0;box-shadow:var(--shadow)">
+  <div class="card" style="border:none;box-shadow:none">
+    <div class="hd">Cardio Options</div>
+    <div class="bd" id="cardioInfoBody"></div>
+    <div class="right" style="padding:0 12px 12px"><button id="closeCardioInfo" class="btn primary">Close</button></div>
   </div>
+</dialog>
 
-  <!-- Settings Modal -->
-  <dialog id="settingsDlg" style="border:none; border-radius:var(--radius); width:min(620px, 96%); padding:0; box-shadow:var(--shadow)">
-    <div class="card" style="border:none; box-shadow:none">
-      <div class="hd">Settings</div>
-      <div class="bd">
-        <div class="row cols-2">
-          <div>
-            <label>Sunday maps to</label>
-            <select id="sundaySelect">
-              <option value="1">Day 1</option>
-              <option value="2">Day 2</option>
-              <option value="3">Day 3</option>
-              <option value="4">Day 4</option>
-              <option value="5" selected>Day 5</option>
-            </select>
-          </div>
-          <div>
-            <label>Weekday → Day mapping (defaults)</label>
-            <div class="muted">Fri→1, Tue→2, Wed→3, Sat→4</div>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div>
-          <label>Import Work Dates (optional)</label>
-          <div class="muted" style="font-size:12px">Paste dates (YYYY-MM-DD, separated by commas, spaces, or new lines). The app will assign Day 1–5 in the order of these dates.</div>
-          <textarea id="workDatesBox" placeholder="2025-08-15, 2025-08-19, 2025-08-20, ..."></textarea>
-          <div class="stack">
-            <button id="applyDates" class="btn">Apply dates</button>
-            <button id="clearDates" class="btn ghost">Clear dates</button>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div>
-          <label>Show history by default</label>
-          <input id="defaultHistory" type="checkbox" class="switch">
-        </div>
-        <div class="right" style="margin-top:12px">
-          <button id="closeSettings" class="btn primary">Done</button>
-        </div>
+<!-- Settings dialog -->
+<dialog id="settingsDlg" style="border:none;border-radius:16px;width:min(620px,96%);padding:0;box-shadow:var(--shadow)">
+  <div class="card" style="border:none;box-shadow:none">
+    <div class="hd">Settings</div>
+    <div class="bd">
+      <div class="row cols-3">
+        <div><label>Sunday maps to</label><select id="sundaySelect"><option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option><option value="4">Day 4</option><option value="5" selected>Day 5</option></select></div>
+        <div><label>Weekday → Day (defaults)</label><div class="hint">Fri→1, Tue→2, Wed→3, Sat→4</div></div>
+        <div><label>Show history by default</label><input id="defaultHistory" type="checkbox" class="switch"></div>
       </div>
-    </div>
-  </dialog>
-
-  <!-- Cardio Info Modal -->
-  <dialog id="cardioInfo" style="border:none; border-radius:var(--radius); width:min(560px, 96%); padding:0; box-shadow:var(--shadow)">
-    <div class="card" style="border:none; box-shadow:none">
-      <div class="hd">Cardio Options</div>
-      <div class="bd" id="cardioInfoBody"></div>
-      <div class="right" style="padding:0 12px 12px">
-        <button id="closeCardioInfo" class="btn primary">Close</button>
+      <div style="height:1px;background:var(--ring);margin:12px 0"></div>
+      <div>
+        <label>Import Work Dates (optional)</label>
+        <div class="hint">Paste dates (YYYY-MM-DD, separated by commas/spaces/new lines). Assigns Day 1–5 in this order when dates match.</div>
+        <textarea id="workDatesBox" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--ring);border-radius:12px"></textarea>
+        <div class="stack" style="margin-top:8px"><button id="applyDates" class="btn">Apply dates</button><button id="clearDates" class="btn">Clear dates</button></div>
       </div>
+      <div class="right" style="margin-top:12px"><button id="closeSettings" class="btn primary">Done</button></div>
     </div>
-  </dialog>
+  </div>
+</dialog>
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const LS_SESSIONS="wl_sessions_v1",LS_SETTINGS="wl_settings_v1";
+const CARDIO_OPTIONS=[
+  {name:"Stairmaster",info:"20 min steady climb. RPE 7–8. Light hands on rails; tall posture."},
+  {name:"Elliptical",info:"20 min moderate resistance. Smooth strides; heels down."},
+  {name:"Bike",info:"20 min. Cadence 80–100 RPM with steady resistance. RPE 6–7."},
+  {name:"Sprinting Intervals",info:"~15 min: warm up 5′ → 6–10 × (20–30s fast / 60–90s easy) → cool down."}
+];
+const DEFAULT_TEMPLATES={
+  1:[{name:"Smith Machine Squat",sets:3,reps:10,weight:""},{name:"Hamstring Curl",sets:3,reps:12,weight:""},{name:"Hip Thrust (Smith)",sets:3,reps:10,weight:""},{name:"Calf Press",sets:3,reps:15,weight:""},{name:"Lat Pulldown",sets:3,reps:12,weight:""},{name:"OH Tricep Extension",sets:3,reps:12,weight:""}],
+  2:[{name:"Barbell Row",sets:3,reps:12,weight:""},{name:"Curl (DB/EZ/BB)",sets:3,reps:12,weight:""},{name:"Incline Bench",sets:3,reps:12,weight:""},{name:"Lateral Raise",sets:3,reps:12,weight:""},{name:"Leg Press",sets:3,reps:10,weight:""},{name:"Hamstring Curl",sets:3,reps:12,weight:""},{name:"Machine Hip Thrust",sets:3,reps:10,weight:""}],
+  3:[{name:"Smith Lunge (1¼)",sets:3,reps:12,weight:""},{name:"RDL",sets:3,reps:12,weight:""},{name:"Lat Pullover",sets:3,reps:12,weight:""},{name:"1-Arm Row",sets:3,reps:10,weight:""},{name:"Seated Shoulder Press",sets:3,reps:10,weight:""},{name:"DB Curl",sets:3,reps:12,weight:""},{name:"Tricep Pushdown",sets:3,reps:12,weight:""}],
+  4:[{name:"Cardio",sets:1,reps:20,weight:"min"},{name:"V-Ups",sets:3,reps:15,weight:""},{name:"Bicycle Crunch",sets:3,reps:15,weight:""},{name:"Leg Raise",sets:3,reps:15,weight:""},{name:"Plank",sets:2,reps:1,weight:"sec"},{name:"Dips",sets:3,reps:12,weight:"bw"}],
+  5:[{name:"Barbell Hip Thrust",sets:4,reps:12,weight:""},{name:"Smith BSS",sets:3,reps:12,weight:""},{name:"Romanian Deadlift",sets:4,reps:12,weight:""},{name:"Leg Press (High+Wide)",sets:3,reps:10,weight:""},{name:"Glute Kickback",sets:3,reps:12,weight:""},{name:"Leg Ext / Seated Curl (SS)",sets:3,reps:12,weight:""},{name:"Leg Press Calf Raise",sets:4,reps:15,weight:""},{name:"Sissy Squat",sets:2,reps:0,weight:"AMRAP"}]
+};
+const DEFAULT_DAY_MAP={1:null,2:2,3:3,4:null,5:1,6:4}; // Mon..Sat; Sunday handled separately
 
-  <script>
-    const LS_SESSIONS = "wl_sessions_v1";
-    const LS_SETTINGS = "wl_settings_v1";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const elDate=$("#dateInput"), elDay=$("#daySelect"), elUnit=$("#unitSelect"), elPill=$("#weekdayPill");
+const elExList=$("#exList"), elNotes=$("#notesInput"), elSave=$("#saveBtn"), elAddEx=$("#addEx");
+const elGraph=$("#graphSelect"), elChartCanvas=$("#chart"), elHistT=$("#historyToggle"), elHistW=$("#historyWrap"), elHistL=$("#historyList");
+const elSearch=$("#searchInput"), elExport=$("#exportBtn"), elImport=$("#importInput"), elOpenSettings=$("#openSettings");
+const settingsDlg=$("#settingsDlg"), sundaySelect=$("#sundaySelect"), workDatesBox=$("#workDatesBox"), applyDates=$("#applyDates"), clearDates=$("#clearDates"), defaultHistory=$("#defaultHistory");
+const cardioDlg=$("#cardioInfo"), cardioInfoBody=$("#cardioInfoBody"), closeCardio=$("#closeCardioInfo");
 
-    // Cardio from your spreadsheet (Day 4): choose ONE
-    const CARDIO_OPTIONS = [
-      { name: "Stairmaster", info: "20 min steady climb. RPE 7–8. Light hands on rails; tall posture." },
-      { name: "Elliptical", info: "20 min moderate resistance. Smooth strides; heels stay down." },
-      { name: "Bike", info: "20 min. Cadence 80–100 RPM with steady resistance. RPE 6–7." },
-      { name: "Sprinting Intervals", info: "Total ~15 min. 5‑min warmup → 6–10 rounds of 20–30s fast / 60–90s easy → cool‑down." }
-    ];
+const state={
+  sessions: JSON.parse(localStorage.getItem(LS_SESSIONS)||"[]"),
+  settings: JSON.parse(localStorage.getItem(LS_SETTINGS)||JSON.stringify({unit:"lb",dayMap:DEFAULT_DAY_MAP,sundayIs:5,showHistory:false,workDates:[]}))
+};
+function saveAll(){localStorage.setItem(LS_SESSIONS,JSON.stringify(state.sessions));localStorage.setItem(LS_SETTINGS,JSON.stringify(state.settings));buildGraph();rebuildGraphExerciseList();renderHistory();}
+function todayISO(){const d=new Date();d.setHours(12,0,0,0);return d.toISOString().slice(0,10);}
+function weekdayName(iso){const d=new Date(iso+"T12:00:00");return d.toLocaleDateString(undefined,{weekday:"long"});}
+for(let i=1;i<=5;i++){const o=document.createElement("option");o.value=i;o.textContent="Day "+i;elDay.appendChild(o);}
+elDate.value=todayISO(); elUnit.value=state.settings.unit||"lb"; elHistT.checked=!!state.settings.showHistory; elHistW.style.display=elHistT.checked?"block":"none"; sundaySelect.value=String(state.settings.sundayIs||5); defaultHistory.checked=!!state.settings.showHistory;
 
-    const DEFAULT_TEMPLATES = {
-      1: [
-        { name: "Smith Machine Squat", sets: 3, reps: 10, weight: "" },
-        { name: "Hamstring Curl", sets: 3, reps: 12, weight: "" },
-        { name: "Hip Thrust (Smith)", sets: 3, reps: 10, weight: "" },
-        { name: "Calf Press", sets: 3, reps: 15, weight: "" },
-        { name: "Lat Pulldown", sets: 3, reps: 12, weight: "" },
-        { name: "OH Tricep Extension", sets: 3, reps: 12, weight: "" },
-      ],
-      2: [
-        { name: "Barbell Row", sets: 3, reps: 12, weight: "" },
-        { name: "Curl (DB/EZ/BB)", sets: 3, reps: 12, weight: "" },
-        { name: "Incline Bench", sets: 3, reps: 12, weight: "" },
-        { name: "Lateral Raise", sets: 3, reps: 12, weight: "" },
-        { name: "Leg Press", sets: 3, reps: 10, weight: "" },
-        { name: "Hamstring Curl", sets: 3, reps: 12, weight: "" },
-        { name: "Machine Hip Thrust", sets: 3, reps: 10, weight: "" },
-      ],
-      3: [
-        { name: "Smith Lunge (1¼)", sets: 3, reps: 12, weight: "" },
-        { name: "RDL", sets: 3, reps: 12, weight: "" },
-        { name: "Lat Pullover", sets: 3, reps: 12, weight: "" },
-        { name: "1-Arm Row", sets: 3, reps: 10, weight: "" },
-        { name: "Seated Shoulder Press", sets: 3, reps: 10, weight: "" },
-        { name: "DB Curl", sets: 3, reps: 12, weight: "" },
-        { name: "Tricep Pushdown", sets: 3, reps: 12, weight: "" },
-      ],
-      4: [
-        { name: "Cardio", sets: 1, reps: 20, weight: "min" },  /* special: dropdown + duration instead of weight */
-        { name: "V-Ups", sets: 3, reps: 15, weight: "" },
-        { name: "Bicycle Crunch", sets: 3, reps: 15, weight: "" },
-        { name: "Leg Raise", sets: 3, reps: 15, weight: "" },
-        { name: "Plank", sets: 2, reps: 1, weight: "sec" },
-        { name: "Dips", sets: 3, reps: 12, weight: "bw" },
-      ],
-      5: [
-        { name: "Barbell Hip Thrust", sets: 4, reps: 12, weight: "" },
-        { name: "Smith BSS", sets: 3, reps: 12, weight: "" },
-        { name: "Romanian Deadlift", sets: 4, reps: 12, weight: "" },
-        { name: "Leg Press (High+Wide)", sets: 3, reps: 10, weight: "" },
-        { name: "Glute Kickback", sets: 3, reps: 12, weight: "" },
-        { name: "Leg Ext / Seated Curl (SS)", sets: 3, reps: 12, weight: "" },
-        { name: "Leg Press Calf Raise", sets: 4, reps: 15, weight: "" },
-        { name: "Sissy Squat", sets: 2, reps: 0, weight: "AMRAP" },
-      ],
-    };
+function getDefaultDay(iso){
+  const d=new Date(iso+"T12:00:00"), w=d.getDay(); // 0 Sun..6 Sat
+  if(state.settings.workDates?.length){const sorted=[...state.settings.workDates].sort();const idx=sorted.indexOf(iso); if(idx!==-1) return (idx%5)+1;}
+  if(w===0) return state.settings.sundayIs||5; const map=state.settings.dayMap||DEFAULT_DAY_MAP; return map[w]||1;
+}
+function setDayAuto(){const iso=elDate.value; elDay.value=getDefaultDay(iso); elPill.innerHTML='<span class="star"></span> '+weekdayName(iso); buildExerciseRows();}
 
-    const DEFAULT_DAY_MAP = { 1:null, 2:2, 3:3, 4:null, 5:1, 6:4 }; // Mon..Sat (Sun handled separately)
-    const state = {
-      sessions: JSON.parse(localStorage.getItem(LS_SESSIONS) || "[]"),
-      settings: JSON.parse(localStorage.getItem(LS_SETTINGS) || JSON.stringify({
-        unit: "lb",
-        dayMap: DEFAULT_DAY_MAP,
-        sundayIs: 5,
-        showHistory: false,
-        workDates: []
-      }))
-    };
+function cardioInfoHTML(){return CARDIO_OPTIONS.map(o=>`<div class="list"><div><strong>${o.name}</strong><div class="hint">${o.info}</div></div></div>`).join("");}
 
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-    const todayISO = () => { const d = new Date(); d.setHours(12,0,0,0); return d.toISOString().slice(0,10); };
-
-    const elDate = $("#dateInput");
-    const elDay = $("#daySelect");
-    const elUnit = $("#unitSelect");
-    const elPill = $("#weekdayPill");
-    const elExList = $("#exList");
-    const elNotes = $("#notesInput");
-    const elSave = $("#saveBtn");
-    const elAddEx = $("#addEx");
-    const elGraph = $("#graphSelect");
-    const elChartCanvas = $("#chart");
-    const elHistoryToggle = $("#historyToggle");
-    const elHistoryWrap = $("#historyWrap");
-    const elHistoryList = $("#historyList");
-    const elSearch = $("#searchInput");
-    const elExport = $("#exportBtn");
-    const elImport = $("#importInput");
-    const elOpenSettings = $("#openSettings");
-
-    // Settings elements
-    const dlg = $("#settingsDlg");
-    const sundaySelect = $("#sundaySelect");
-    const workDatesBox = $("#workDatesBox");
-    const applyDatesBtn = $("#applyDates");
-    const clearDatesBtn = $("#clearDates");
-    const defaultHistoryChk = $("#defaultHistory");
-    const closeSettingsBtn = $("#closeSettings");
-
-    // Cardio info elements
-    const cardioDlg = $("#cardioInfo");
-    const cardioInfoBody = $("#cardioInfoBody");
-    const closeCardioBtn = $("#closeCardioInfo");
-
-    function saveAll(){
-      localStorage.setItem(LS_SESSIONS, JSON.stringify(state.sessions));
-      localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings));
-      buildGraph();
-      rebuildGraphExerciseList();
-      renderHistory();
-    }
-
-    // Init controls
-    for (let i=1;i<=5;i++){
-      const opt = document.createElement("option");
-      opt.value = i; opt.textContent = "Day " + i;
-      elDay.appendChild(opt);
-    }
-    elDate.value = todayISO();
-    elUnit.value = state.settings.unit || "lb";
-    elHistoryToggle.checked = !!state.settings.showHistory;
-    elHistoryWrap.style.display = elHistoryToggle.checked ? "block" : "none";
-    sundaySelect.value = String(state.settings.sundayIs || 5);
-    defaultHistoryChk.checked = !!state.settings.showHistory;
-
-    function weekdayName(dateISO){
-      const d = new Date(dateISO + "T12:00:00");
-      return d.toLocaleDateString(undefined, { weekday: "long" });
-    }
-
-    function getDefaultDay(dateISO){
-      const d = new Date(dateISO + "T12:00:00");
-      const w = d.getDay(); // 0 Sun .. 6 Sat
-
-      // If workDates provided and contains this date, assign cyc index Day 1..5
-      if (state.settings.workDates && state.settings.workDates.length){
-        const sorted = [...state.settings.workDates].sort();
-        const idx = sorted.indexOf(dateISO);
-        if (idx !== -1) return (idx % 5) + 1;
-      }
-
-      if (w === 0) return state.settings.sundayIs || 5;
-      const map = state.settings.dayMap || DEFAULT_DAY_MAP;
-      return map[w] || 1;
-    }
-
-    function setDayAuto(){
-      const dISO = elDate.value;
-      elDay.value = getDefaultDay(dISO);
-      elPill.innerHTML = '<span class="star"></span> ' + weekdayName(dISO);
-      buildExerciseRows();
-    }
-
-    function buildExerciseRows(){
-      elExList.innerHTML = "";
-      const template = DEFAULT_TEMPLATES[Number(elDay.value)] || [{name:"Custom Exercise", sets:3, reps:10, weight:""}];
-      template.forEach((ex, idx) => addExRow(ex, idx));
-    }
-
-    function cardioInfoHTML(){
-      return CARDIO_OPTIONS.map(o => `<div class="item"><strong>${o.name}</strong><div class="hint">${o.info}</div></div>`).join("");
-    }
-
-    
 function addExRow(ex, idx){
-      const wrap = document.createElement("div");
-      wrap.className = "ex-row";
+  const wrap=document.createElement("div"); wrap.className="ex-row";
+  const tmpl=(DEFAULT_TEMPLATES[Number(elDay.value)]||[])[idx]||{};
+  const recNote=(tmpl.sets&&tmpl.reps)?`<div class='hint'>Recommended: ${tmpl.sets} × ${tmpl.reps}</div>`:"";
+  const isCardio=Number(elDay.value)===4 && idx===0;
+  const isBWDay4=Number(elDay.value)===4 && idx>0;
 
-      // recommended from template
-      const dayTemplate = DEFAULT_TEMPLATES[Number(elDay.value)] || [];
-      const templateEx = dayTemplate[idx] || {};
-      const recSets = templateEx.sets ?? ex.sets ?? 3;
-      const recReps = templateEx.reps ?? ex.reps ?? 10;
-      const recNote = (recSets && recReps) ? `<div class='hint'>Recommended: ${recSets} × ${recReps}</div>` : "";
-
-      let nameFieldHTML = `
-        <div>
-          <label>Exercise</label>
-          <input type="text" value="${ex.name || ""}" placeholder="e.g., Hip Thrust" data-role="name">
-          ${recNote}
-        </div>`;
-
-      // Special handling: Day 4 first item is cardio dropdown
-      const isCardio = Number(elDay.value) === 4 && idx === 0;
-      if (isCardio){
-        const opts = CARDIO_OPTIONS.map(o => `<option value="${o.name}">${o.name}</option>`).join("");
-        nameFieldHTML = `
-        <div>
-          <label>Cardio</label>
-          <div class="inline">
-            <select data-role="cardio">${opts}</select>
-            <button class="btn ghost" data-role="cardioInfo">i</button>
-          </div>
-          <div class="hint">Pick one and log duration below.</div>
-          ${recNote}
-        </div>`;
-      }
-
-      const isBodyweightDay4 = Number(elDay.value) === 4 && idx > 0;
-
-      wrap.innerHTML = `
-        ${nameFieldHTML}
-        <div>
-          <label>Sets</label>
-          <input type="number" value="${ex.sets ?? 3}" data-role="sets">
-        </div>
-        <div>
-          <label>Reps</label>
-          <input type="number" value="${ex.reps ?? 10}" data-role="reps">
-        </div>
-        <div>
-          <label>${isCardio ? "Duration (min)" : (isBodyweightDay4 ? "Weight (n/a)" : "Weight (<span class='unit'>"+(state.settings.unit)+"</span>)")}</label>
-          <input type="text" value="${ex.weight || ""}" placeholder="${isCardio ? "e.g., 20" : (isBodyweightDay4 ? "n/a" : "e.g., 135")}" data-role="weight">
-        </div>
-        <div>
-          <button class="btn del">×</button>
-        </div>
-      `;
-      wrap.querySelector(".del").addEventListener("click", ()=> wrap.remove());
-      const infoBtn = wrap.querySelector("[data-role='cardioInfo']");
-      if (infoBtn){
-        infoBtn.addEventListener("click", () => {
-          cardioInfoBody.innerHTML = cardioInfoHTML();
-          cardioDlg.showModal();
-        });
-      }
-      elExList.appendChild(wrap);
-    }
-
-    function collectExercises(){
-      return $$(".ex-row").map(row => {
-        const nameSel = row.querySelector("[data-role='cardio']");
-        const nameI = row.querySelector("[data-role='name']");
-        const setsI = row.querySelector("[data-role='sets']");
-        const repsI = row.querySelector("[data-role='reps']");
-        const weightI = row.querySelector("[data-role='weight']");
-        return {
-          name: nameSel ? nameSel.value : (nameI?.value.trim() || ""),
-          sets: Number(setsI.value || 0),
-          reps: Number(repsI.value || 0),
-          weight: weightI.value.trim()
-        };
-      }).filter(e => e.name);
-    }
-
-    function rebuildGraphExerciseList(){
-      const set = new Set();
-      Object.values(DEFAULT_TEMPLATES).flat().forEach(e => set.add(e.name));
-      CARDIO_OPTIONS.forEach(o => set.add(o.name));
-      state.sessions.forEach(s => s.exercises.forEach(e => set.add(e.name)));
-      const list = Array.from(set).filter(Boolean).sort();
-      const current = elGraph.value;
-      elGraph.innerHTML = "";
-      list.forEach(n => {
-        const opt = document.createElement("option");
-        opt.value = n; opt.textContent = n;
-        elGraph.appendChild(opt);
-      });
-      if (list.length){
-        elGraph.value = list.includes(current) ? current : list[0];
-      }
-    }
-
-    function renderHistory(){
-      const show = elHistoryToggle.checked;
-      elHistoryWrap.style.display = show ? "block" : "none";
-      if (!show) return;
-      const q = (elSearch?.value || "").trim().toLowerCase();
-      const items = state.sessions.filter(s =>
-        !q ||
-        s.date.includes(q) ||
-        String(s.day).includes(q) ||
-        s.exercises.some(e => e.name.toLowerCase().includes(q))
-      );
-      elHistoryList.innerHTML = "";
-      if (!items.length){
-        const none = document.createElement("div");
-        none.className = "muted";
-        none.textContent = "No sessions yet.";
-        elHistoryList.appendChild(none);
-        return;
-      }
-      items.forEach((s, idx) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        const exHtml = s.exercises.map(e => `<div style="display:flex; justify-content:space-between"><div>${e.name}</div><div class="muted">${e.sets}×${e.reps} @ ${e.weight}</div></div>`).join("");
-        div.innerHTML = `
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
-            <div style="font-weight:700">${s.date} — Day ${s.day}</div>
-            <button class="btn ghost" data-del="${idx}">Delete</button>
-          </div>
-          ${s.notes ? `<div class="muted" style="margin:6px 0">${s.notes}</div>` : ""}
-          <div style="margin-top:6px">${exHtml}</div>
-        `;
-        div.querySelector("[data-del]").addEventListener("click", () => {
-          const i = state.sessions.indexOf(s);
-          if (i >= 0){ state.sessions.splice(i,1); saveAll(); }
-        });
-        elHistoryList.appendChild(div);
-      });
-    }
-
-    // Graph
-    let chart;
-    function buildGraph(){
-      const exName = elGraph.value;
-      const points = state.sessions
-        .flatMap(s => s.exercises
-          .filter(e => e.name === exName)
-          .map(e => ({ date: s.date, weight: Number(String(e.weight).replace(/[^0-9.]/g, "")) || 0 }))
-        )
-        .filter(p => p.weight > 0)
-        .slice().reverse(); // chronological
-
-      const labels = points.map(p => p.date);
-      const data = points.map(p => p.weight);
-      if (chart) { chart.destroy(); }
-      chart = new Chart(elChartCanvas, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: exName || "Exercise",
-            data,
-            borderWidth: 2,
-            pointRadius: 3,
-            tension: 0.25
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: false }
-          },
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-    }
-
-    // Events
-    elDate.addEventListener("change", setDayAuto);
-    elUnit.addEventListener("change", () => {
-      state.settings.unit = elUnit.value;
-      $$(".ex-row .unit").forEach(u => u.textContent = elUnit.value);
-      saveAll();
-    });
-    elDay.addEventListener("change", buildExerciseRows);
-    elAddEx.addEventListener("click", () => addExRow({ name:"", sets:3, reps:10, weight:"" }, 999));
-    elSave.addEventListener("click", () => {
-      const entry = {
-        date: elDate.value,
-        day: Number(elDay.value),
-        notes: elNotes.value.trim(),
-        exercises: collectExercises()
-      };
-      if (!entry.date){ alert("Pick a date."); return; }
-      if (!entry.exercises.length){ alert("Add at least one exercise."); return; }
-      state.sessions.unshift(entry);
-      elNotes.value = "";
-      saveAll();
-      buildExerciseRows(); // reset to template
-    });
-    elHistoryToggle.addEventListener("change", () => {
-      state.settings.showHistory = elHistoryToggle.checked;
-      saveAll();
-    });
-    elSearch?.addEventListener("input", renderHistory);
-    elGraph.addEventListener("change", buildGraph);
-    elExport.addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "workout_logger_backup.json"; a.click();
-      URL.revokeObjectURL(url);
-    });
-    elImport.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          if (data.sessions) state.sessions = data.sessions;
-          if (data.settings) state.settings = Object.assign(state.settings, data.settings);
-          // re-apply UI bits
-          elUnit.value = state.settings.unit || "lb";
-          elHistoryToggle.checked = !!state.settings.showHistory;
-          elHistoryWrap.style.display = elHistoryToggle.checked ? "block" : "none";
-          sundaySelect.value = String(state.settings.sundayIs || 5);
-          defaultHistoryChk.checked = !!state.settings.showHistory;
-          saveAll();
-        } catch {
-          alert("Invalid JSON");
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    // Settings dialog
-    elOpenSettings.addEventListener("click", () => {
-      workDatesBox.value = (state.settings.workDates || []).join("\\n");
-      sundaySelect.value = String(state.settings.sundayIs || 5);
-      defaultHistoryChk.checked = !!state.settings.showHistory;
-      dlg.showModal();
-    });
-    closeSettingsBtn.addEventListener("click", () => dlg.close());
-    applyDatesBtn.addEventListener("click", () => {
-      const dates = workDatesBox.value
-        .split(/[\\n,\\s]+/).map(s => s.trim()).filter(Boolean);
-      state.settings.workDates = dates;
-      saveAll();
-      alert("Work dates saved. The Day will auto-assign when the date matches the list.");
-    });
-    clearDatesBtn.addEventListener("click", () => {
-      state.settings.workDates = [];
-      workDatesBox.value = "";
-      saveAll();
-    });
-
-    // Cardio dialog
-    cardioInfoBody.innerHTML = CARDIO_OPTIONS.map(o => `<div class="item"><strong>${o.name}</strong><div class="hint">${o.info}</div></div>`).join("");
-    closeCardioBtn.addEventListener("click", () => cardioDlg.close());
-
-    // Initial UI build
-    function init(){
-      setDayAuto();
-      buildExerciseRows();
-      rebuildGraphExerciseList();
-      buildGraph();
-      renderHistory();
-      // Keyboard shortcut: Ctrl/Cmd+S to export
-      document.addEventListener("keydown", (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s"){
-          e.preventDefault();
-          elExport.click();
-        }
-      });
-    }
-    init();
-  </script>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(console.error);
-      });
-    }
-  </script>
+  let nameFieldHTML=`<div><label>Exercise</label>
+    <input type="text" value="${ex.name||""}" placeholder="e.g., Hip Thrust" data-role="name">
+    ${recNote}</div>`;
+  if(isCardio){
+    const opts=CARDIO_OPTIONS.map(o=>`<option value="${o.name}">${o.name}</option>`).join("");
+    nameFieldHTML=`<div><label>Cardio</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select data-role="cardio">${opts}</select>
+        <button class="btn" data-role="cardioInfo">i</button>
+      </div><div class="hint">Pick one and log duration below.</div>${recNote}</div>`;
+  }
+  wrap.innerHTML=`
+    ${nameFieldHTML}
+    <div><label>Sets</label><input type="number" value="${ex.sets??3}" data-role="sets"></div>
+    <div><label>Reps</label><input type="number" value="${ex.reps??10}" data-role="reps"></div>
+    <div><label>${isCardio?"Duration (min)":(isBWDay4?"Weight (n/a)":"Weight (<span class='unit'>"+(state.settings.unit)+")")}</label>
+         <input type="text" value="${ex.weight||""}" placeholder="${isCardio?"e.g., 20":(isBWDay4?"n/a":"e.g., 135")}" data-role="weight"></div>
+    <div><button class="btn" data-role="del">×</button></div>`;
+  wrap.querySelector("[data-role=del]").addEventListener("click",()=>wrap.remove());
+  const infoBtn=wrap.querySelector("[data-role=cardioInfo]"); if(infoBtn){infoBtn.addEventListener("click",()=>{cardioInfoBody.innerHTML=cardioInfoHTML(); cardioDlg.showModal();});}
+  elExList.appendChild(wrap);
+}
+function buildExerciseRows(){elExList.innerHTML=""; const t=DEFAULT_TEMPLATES[Number(elDay.value)]||[{name:"Custom Exercise",sets:3,reps:10,weight:""}]; t.forEach((ex,i)=>addExRow(ex,i));}
+function collectExercises(){
+  return $$(".ex-row").map(row=>{
+    const nameSel=row.querySelector("[data-role=cardio]"), nameI=row.querySelector("[data-role=name]");
+    const setsI=row.querySelector("[data-role=sets]"), repsI=row.querySelector("[data-role=reps]"), weightI=row.querySelector("[data-role=weight]");
+    return {name:nameSel?nameSel.value:(nameI?.value.trim()||""), sets:Number(setsI.value||0), reps:Number(repsI.value||0), weight:weightI.value.trim()};
+  }).filter(e=>e.name);
+}
+function rebuildGraphExerciseList(){
+  const set=new Set(); Object.values(DEFAULT_TEMPLATES).flat().forEach(e=>set.add(e.name)); CARDIO_OPTIONS.forEach(o=>set.add(o.name));
+  state.sessions.forEach(s=>s.exercises.forEach(e=>set.add(e.name)));
+  const list=[...set].filter(Boolean).sort(), cur=elGraph.value; elGraph.innerHTML=""; list.forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n; elGraph.appendChild(o);});
+  if(list.length) elGraph.value=list.includes(cur)?cur:list[0];
+}
+let chart;
+function buildGraph(){
+  const ex=elGraph.value;
+  const pts=state.sessions.flatMap(s=>s.exercises.filter(e=>e.name===ex).map(e=>({date:s.date,weight:Number(String(e.weight).replace(/[^0-9.]/g,""))||0}))).filter(p=>p.weight>0).slice().reverse();
+  const labels=pts.map(p=>p.date), data=pts.map(p=>p.weight);
+  if(chart) chart.destroy();
+  chart=new Chart(elChartCanvas,{type:"line",data:{labels,datasets:[{label:ex||"Exercise",data,borderWidth:2,pointRadius:3,tension:.25}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+}
+function renderHistory(){
+  const show=elHistT.checked; elHistW.style.display=show?"block":"none"; if(!show) return;
+  const q=(elSearch?.value||"").trim().toLowerCase();
+  const items=state.sessions.filter(s=>!q||s.date.includes(q)||String(s.day).includes(q)||s.exercises.some(e=>e.name.toLowerCase().includes(q)));
+  elHistL.innerHTML=""; if(!items.length){const d=document.createElement("div");d.className="hint";d.textContent="No sessions yet.";elHistL.appendChild(d);return;}
+  items.forEach((s)=>{const div=document.createElement("div");div.className="card";div.style.padding="8px 10px";
+    const exHtml=s.exercises.map(e=>`<div style="display:flex;justify-content:space-between"><div>${e.name}</div><div class="hint">${e.sets}×${e.reps} @ ${e.weight}</div></div>`).join("");
+    div.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-weight:700">${s.date} — Day ${s.day}</div><button class="btn" data-del>Delete</button></div>${s.notes?`<div class="hint" style="margin:6px 0">${s.notes}</div>`:""}<div style="margin-top:6px">${exHtml}</div>`;
+    div.querySelector("[data-del]").addEventListener("click",()=>{const i=state.sessions.indexOf(s);if(i>=0){state.sessions.splice(i,1);saveAll();}});
+    elHistL.appendChild(div);
+  });
+}
+function init(){
+  setDayAuto(); buildExerciseRows(); rebuildGraphExerciseList(); buildGraph(); renderHistory();
+  document.addEventListener("keydown",(e)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault(); elExport.click();}});
+  elDate.addEventListener("change",setDayAuto);
+  elUnit.addEventListener("change",()=>{state.settings.unit=elUnit.value; saveAll();});
+  elDay.addEventListener("change",buildExerciseRows);
+  elAddEx.addEventListener("click",()=>addExRow({name:"",sets:3,reps:10,weight:""},999));
+  elSave.addEventListener("click",()=>{const entry={date:elDate.value,day:Number(elDay.value),notes:elNotes.value.trim(),exercises:collectExercises()};
+    if(!entry.date){alert("Pick a date.");return;} if(!entry.exercises.length){alert("Add at least one exercise.");return;}
+    state.sessions.unshift(entry); elNotes.value=""; saveAll(); buildExerciseRows();});
+  elHistT.addEventListener("change",()=>{state.settings.showHistory=elHistT.checked; saveAll();});
+  elSearch?.addEventListener("input",renderHistory);
+  elGraph.addEventListener("change",buildGraph);
+  elExport.addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="workout_logger_backup.json";a.click();URL.revokeObjectURL(url);});
+  elImport.addEventListener("change",(e)=>{const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{try{const data=JSON.parse(r.result); if(data.sessions) state.sessions=data.sessions; if(data.settings) Object.assign(state.settings,data.settings); elUnit.value=state.settings.unit||"lb"; elHistT.checked=!!state.settings.showHistory; elHistW.style.display=elHistT.checked?"block":"none"; sundaySelect.value=String(state.settings.sundayIs||5); defaultHistory.checked=!!state.settings.showHistory; saveAll();}catch{alert("Invalid JSON");}}; r.readAsText(f);});
+  elOpenSettings.addEventListener("click",()=>{workDatesBox.value=(state.settings.workDates||[]).join("\n"); sundaySelect.value=String(state.settings.sundayIs||5); defaultHistory.checked=!!state.settings.showHistory; settingsDlg.showModal();});
+  $("#closeSettings").addEventListener("click",()=>settingsDlg.close());
+  applyDates.addEventListener("click",()=>{const dates=workDatesBox.value.split(/[\n,\s]+/).map(s=>s.trim()).filter(Boolean); state.settings.workDates=dates; saveAll(); alert("Work dates saved.");});
+  clearDates.addEventListener("click",()=>{state.settings.workDates=[]; workDatesBox.value=""; saveAll();});
+  closeCardio.addEventListener("click",()=>cardioDlg.close());
+}
+init();
+</script>
 </body>
 </html>
